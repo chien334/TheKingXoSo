@@ -61,7 +61,9 @@ services.AddAuthentication(IISDefaults.AuthenticationScheme)
         options.ClientSecret = config["oauth.microsoftgraph.AppSecret"];
         options.SaveTokens = true;
     });
-    
+
+services.AddAuthorization();
+
 services.Configure<ForwardedHeadersOptions>(options => {
     //https://github.com/aspnet/IISIntegration/issues/140#issuecomment-215135928
     options.ForwardedHeaders = ForwardedHeaders.XForwardedProto;
@@ -123,14 +125,16 @@ else
 app.UseStaticFiles();
 app.UseCookiePolicy();
 app.UseAuthentication();
+app.UseAuthorization();
 
 app.UseServiceStack(new AppHost());
 
-app.UseMvc(routes =>
-{
-    routes.MapRoute(
-        name: "default",
-        template: "{controller=Home}/{action=Index}/{id?}");
-});
+app.MapControllerRoute(
+    name: "areas",
+    pattern: "{area:exists}/{controller=Home}/{action=Index}/{id?}");
+
+app.MapControllerRoute(
+    name: "default",
+    pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.Run();
